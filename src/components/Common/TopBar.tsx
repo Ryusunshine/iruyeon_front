@@ -38,7 +38,7 @@ const TopBar = ({ currentUser, onLogout }: { currentUser?: any, onLogout: () => 
           <Link to="/client" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">프로필</Link>
           <Link to="/matches" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">매칭내역</Link>
           {currentUser?.isAdmin && (
-            <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">관리자</Link>
+            <Link to="/admin/member" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">관리자</Link>
           )}
           {!currentUser && (
             <>
