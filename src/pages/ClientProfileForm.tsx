@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/Common/TopBar';
 import { useAuthGuard } from '../hooks/useAuthGuard';
+import { useParams } from 'react-router-dom';
+
 
 const jobList = [
   '대기업', '중견기업', '중소기업',
@@ -10,7 +12,7 @@ const jobList = [
   '판사', '검사', '변호사', '회계사', '세무사', '프리랜서', '기타'
 ];
 const eduLevelList = [
-  '고졸', '전문대', '학사', '석사', '박사', '기타'
+  '학사', '전문대', '석사', '박사', '기타', '고졸'
 ];
 const religionList = [
   '무교', '기독교', '천주교', '불교', '기타'
@@ -36,7 +38,8 @@ function getCookie(name: string): string | undefined {
   return undefined;
 }
 
-const ProfileForm = () => {
+const ClientProfileForm = () => {
+  const { id } = useParams(); // URL에서 id 추출
   const [form, setForm] = useState<{
     name: string;
     phoneNumber: string;
@@ -66,6 +69,7 @@ const ProfileForm = () => {
     hasChild: string;
     childCnt: string;
     etc: string;
+    profileImages: string[];
   }>({
     name: '',
     phoneNumber: '',
@@ -95,12 +99,14 @@ const ProfileForm = () => {
     hasChild: '아니오',
     childCnt: '',
     etc: '',
+    profileImages: [],
   });
   const [family, setFamily] = useState([
     { name: '', relation: '', job: '', education: '', age: '', religion: '' }
   ]);
   const [photos, setPhotos] = useState<(File | null)[]>([null, null, null]);
   const [photoUrls, setPhotoUrls] = useState<(string | null)[]>([null, null, null]);
+  
   const [errors, setErrors] = useState<{[key:string]: boolean}>({});
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -113,8 +119,76 @@ const ProfileForm = () => {
   const [birthMonth, setBirthMonth] = useState('');
   const [birthDay, setBirthDay] = useState('');
 
+
   // 가족 정보용 출생년도 드롭박스
   const familyBirthYears = Array.from({length: 81}, (_, i) => String(2005 - i));
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8082/api/v0/client/${id}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+        });
+        if (!res.ok) throw new Error('프로필 불러오기 실패');
+        const data = await res.json();
+        const profile = data.data;
+  
+        // 폼 데이터 세팅
+        setForm(f => ({
+          ...f,
+          name: profile.name || '',
+          address: profile.address || '',
+          birthYear: profile.birthYear ? String(profile.birthYear) : '',
+          currentJob: profile.currentJob || '',
+          previousJob: profile.previousJob || '',
+          jobDetail: profile.jobDetail || '',
+          height: profile.height ? (profile.height ? String(profile.height) : '') : '',
+          info: profile.info || '',
+          homeTown: profile.homeTown || '',
+          gender: profile.gender === 'FEMALE' ? '여자' : profile.gender === 'MALE' ? '남자' : '',
+          status: profile.status || '',
+          minPreferredAge: profile.minPreferredAge ? String(profile.minPreferredAge) : '',
+          maxPreferredAge: profile.maxPreferredAge ? String(profile.maxPreferredAge) : '',
+          hobby: profile.hobby || '',
+          idealType: profile.idealType ? JSON.parse(profile.idealType) : [],
+          personality: profile.personality ? JSON.parse(profile.personality) : [],
+          hasChild: profile.hasChild ? '예' : '아니오',
+          childCnt: profile.hasChild ? (profile.childCnt ? String(profile.childCnt) : '') : '',
+          property: profile.property || '',
+          major: profile.major ? profile.major.replace('(학과)', '') : '',
+          university: profile.university || '',
+          highSchool: profile.highSchool || '',
+          eduLevel: profile.eduLevel || eduLevelList[0],
+          maritalStatus: profile.maritalStatus === 'REMARRIED' ? '재혼' : '초혼',
+          etc: profile.etc || '',
+          job: profile.currentJob || jobList[0],
+          profileImages: profile.profileImages || [], // null 대신 빈 배열로 초기화
+        }));
+  
+        // 가족 정보 세팅
+        if (profile.families && profile.families.length > 0) {
+          const mappedFamilies = profile.families.map((fam: any) => ({
+            name: fam.name || '',
+            relation: relationOptions.find(r => r.value === fam.relationship)?.label || '',
+            job: fam.currentJob || '',
+            education: fam.education || '',
+            age: fam.birthYear ? String(fam.birthYear) : '',
+            religion: fam.religion || '',
+          }));
+          setFamily(mappedFamilies);
+        }
+  
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    fetchProfile();
+  }, []);
+
 
   // 생년월일 드롭박스 값이 바뀔 때 form.birth에 YYYY-MM-DD로 저장
   useEffect(() => {
@@ -132,11 +206,6 @@ const ProfileForm = () => {
     }
   }, [navigate]);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log('[ProfileForm] token:', token);
-  }, []);
-
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -153,14 +222,23 @@ const ProfileForm = () => {
     }
   };
 
+    // 사진 변경 핸들러
   const handlePhotoChange = (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const newPhotos = [...photos];
       const newPhotoUrls = [...photoUrls];
-      newPhotos[idx] = e.target.files[0];
+      newPhotos[idx] = e.target.files[0]; // 새로 추가된 파일
       newPhotoUrls[idx] = URL.createObjectURL(e.target.files[0]);
       setPhotos(newPhotos);
       setPhotoUrls(newPhotoUrls);
+
+      // 기존 서버 이미지가 있는 경우 null 처리
+      setForm((prev: any) => {
+        const updatedImages = [...prev.profileImages];
+        // 사진이 새로 올라오면 기존 사진은 null로 처리 (덮어쓰기 의미)
+        updatedImages[idx] = prev.profileImages[idx] && prev.profileImages[idx] !== '' ? prev.profileImages[idx] : null;
+        return { ...prev, profileImages: updatedImages };
+      });
     }
   };
 
@@ -185,7 +263,7 @@ const ProfileForm = () => {
 
   const validate = () => {
     const newErrors: {[key:string]: boolean} = {};
-    if (!photos[0]) newErrors['photo0'] = true;
+    if (!photoUrls[0] && !form.profileImages[0] && !photos[0]) newErrors['photo0'] = true;
     if (!form.name) newErrors['name'] = true;
     if (!form.birthYear) newErrors['birthYear'] = true;
     if (!form.job) newErrors['job'] = true;
@@ -212,6 +290,9 @@ const ProfileForm = () => {
     e.preventDefault();
     const isValid = validate();
     if (!isValid) return;
+
+      // 기존 이미지 URL만 모아서 existingPhotos 배열
+  const existingPhotos = form.profileImages.filter((url: string | null) => url !== null);
 
     // 빈 문자열은 null로 변환
     const nullIfEmpty = (v: any) => v === '' ? null : v;
@@ -270,16 +351,19 @@ const ProfileForm = () => {
       family: mappedFamily,
       etc: nullIfEmpty(form.etc),
       eduLevel: nullIfEmpty(form.eduLevel),
+      existingPhotos: existingPhotos, // 기존 이미지
     };
 
     const formData = new FormData();
     formData.append('clientRequestDTO', new Blob([JSON.stringify(clientRequestDTO)], { type: 'application/json' }));
-    photos.forEach(file => {
-      if (file) formData.append('fileList', file);
+    
+    photos.forEach((file, idx) => {
+      formData.append('fileList', file || new Blob([], { type: 'application/octet-stream' }));
     });
+    
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8082/api/v0/client', {
+      const res = await fetch(`http://localhost:8082/api/v0/client/${id}`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -325,24 +409,48 @@ const ProfileForm = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <TopBar onLogout={handleLogout} />
       <div className="bg-white rounded-2xl shadow-xl px-4 py-6 w-full max-w-3xl mt-20 flex flex-col items-center">
-        <h2 className="text-2xl font-bold mb-6 text-pink-500">프로필 등록</h2>
+        <h2 className="text-2xl font-bold mb-6 text-pink-500">프로필 수정하기</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-h-[70vh] overflow-y-auto px-2">
-          <div className="flex gap-4 justify-center mb-2">
-            {[0,1,2].map(idx => (
-              <div key={idx} className="flex flex-col items-center">
-                <label className={`w-52 h-52 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden border-2 ${errors[`photo${idx}`] ? 'border-red-500' : 'border-pink-200'} hover:border-pink-400 transition`}>
-                  {photoUrls[idx] ? (
-                    <img src={photoUrls[idx]!} alt={`미리보기${idx+1}`} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-gray-400">사진추가</span>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={e => handlePhotoChange(idx, e)} />
-                </label>
-                <span className="text-xs text-gray-400 mt-1">사진 {idx+1}</span>
-                {idx === 0 && errors['photo0'] && <span className="text-xs text-red-500">필수 항목입니다.</span>}
-              </div>
-            ))}
-          </div>
+        <div className="flex gap-4 justify-center mb-2 flex-wrap">
+          {[0, 1, 2].map(idx => (
+            <div key={idx} className="flex flex-col items-center">
+              <label
+                className={`w-52 h-52 bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden border-2 ${
+                  errors[`photo${idx}`] ? 'border-red-500' : 'border-pink-200'
+                } hover:border-pink-400 transition`}
+              >
+                {photoUrls[idx] ? (
+                  // 새로 올린 파일 미리보기
+                  <img
+                    src={photoUrls[idx]!}
+                    alt={`미리보기${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : form.profileImages[idx] ? (
+                  // 기존 서버 이미지
+                  <img
+                    src={form.profileImages[idx]!}
+                    alt={`기존 이미지${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-gray-400">사진추가</span>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => handlePhotoChange(idx, e)}
+                />
+              </label>
+              <span className="text-xs text-gray-400 mt-1">사진 {idx + 1}</span>
+              {idx === 0 && errors['photo0'] && (
+                <span className="text-xs text-red-500">필수 항목입니다.</span>
+              )}
+            </div>
+          ))}
+        </div>
+
           <div className="flex flex-col gap-2">
             <label className="font-semibold">이름 <span className="text-pink-500">*</span></label>
             <input type="text" maxLength={4} placeholder="이름(한글, 최대 4자)" value={form.name} onChange={e => handleChange('name', e.target.value)} className={`border p-3 rounded text-lg ${errors['name'] ? 'border-red-500' : ''}`} />
@@ -550,7 +658,7 @@ const ProfileForm = () => {
               <button type="button" onClick={addFamily} className="mt-2 px-3 py-1 bg-pink-100 text-pink-600 rounded shadow hover:bg-pink-200 transition disabled:opacity-50" disabled={family.length >= 5}>가족 추가</button>
             </div>
           </div>
-          <button type="submit" className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-pink-600 transition">등록하기</button>
+          <button type="submit" className="mt-4 bg-pink-500 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-pink-600 transition">수정하기</button>
           {message && <div className="mt-4 text-center text-green-600 font-bold">{message}</div>}
         </form>
       </div>
@@ -558,4 +666,4 @@ const ProfileForm = () => {
   );
 };
 
-export default ProfileForm;
+export default ClientProfileForm;

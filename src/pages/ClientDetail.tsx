@@ -5,10 +5,6 @@ import { useAuthGuard } from '../hooks/useAuthGuard';
 import { handleUnauthorized } from '../utils/auth';
 import sampleImage from '../sample_Image.webp';
 
-interface ImageResponseDTO {
-  id: number;
-  uri: string;
-}
 
 interface ClientDetailData {
   id: number;
@@ -29,14 +25,16 @@ interface ClientDetailData {
   gender?: string;
   relationship?: string;
   status?: string;
-  ageGapLower?: number;
-  ageGapHigher?: number;
+  minPreferredAge?: number;
+  maxPreferredAge?: number;
   interest?: string;
   idealType?: string;
   personality?: string;
   hasChild?: boolean;
   hobby?: string;
-  profileImages?: ImageResponseDTO[];
+  memberId?: number;
+  height?: number;
+  profileImages?: string[];
   families?: Array<{
     id: number;
     name: string;
@@ -121,7 +119,7 @@ const ClientDetail = () => {
 
   const token = localStorage.getItem('token');
   const currentUser = token ? {
-    id: localStorage.getItem('userId'),
+    id: localStorage.getItem('id'),
     isAdmin: localStorage.getItem('role') === 'ROLE_ADMIN'
   } : null;
 
@@ -163,34 +161,26 @@ const ClientDetail = () => {
 
         <div className="flex gap-4 justify-center mb-6 flex-wrap">
           {Array.isArray(clientData.profileImages) && clientData.profileImages.length > 0 ? (
-            clientData.profileImages
-              .slice() // 원본 배열 보호
-              .sort((a, b) => {
-                // uri가 있는 이미지를 먼저 보여주고, id 기준으로 정렬
-                if (!!a.uri && !b.uri) return -1;
-                if (!a.uri && !!b.uri) return 1;
-                return a.id - b.id;
-              })
-              .map((image, index) => (
-                <div key={image.id || index} className="flex flex-col items-center">
-                  <div className="w-52 h-52 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-pink-200 overflow-hidden">
-                    <img
-                      src={image.uri || sampleImage} // uri 없으면 기본 이미지
-                      alt="프로필 이미지"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null; // 무한 루프 방지
-                        e.currentTarget.src = sampleImage;
-                      }}
-                    />
-                  </div>
+            clientData.profileImages.map((imageUrl, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div className="w-52 h-52 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-pink-200 overflow-hidden">
+                  <img
+                    src={imageUrl || sampleImage} // 문자열 그대로 사용
+                    alt={`프로필 이미지 ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = sampleImage;
+                    }}
+                  />
                 </div>
-              ))
+              </div>
+            ))
           ) : (
             <div className="flex flex-col items-center">
               <div className="w-52 h-52 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-pink-200 overflow-hidden">
                 <img
-                  src={sampleImage} // 기본 이미지
+                  src={sampleImage}
                   alt="기본 프로필"
                   className="w-full h-full object-cover"
                 />
@@ -198,6 +188,7 @@ const ClientDetail = () => {
             </div>
           )}
         </div>
+
 
 
 
@@ -218,6 +209,11 @@ const ClientDetail = () => {
             <div className="border p-3 rounded text-lg bg-gray-50">
               {clientData.gender === 'MALE' ? '남성' : clientData.gender === 'FEMALE' ? '여성' : clientData.gender || '정보 없음'}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-semibold">키</label>
+            <div className="border p-3 rounded text-lg bg-gray-50"> {clientData.height}</div>
           </div>
           
           
@@ -276,11 +272,11 @@ const ClientDetail = () => {
             <div className="border p-3 rounded text-lg bg-gray-50">{clientData.hobby || '정보 없음'}</div>
           </div>
 
-          {clientData.ageGapLower !== undefined && clientData.ageGapHigher !== undefined && (
+          {clientData.minPreferredAge !== undefined && clientData.maxPreferredAge !== undefined && (
             <div className="flex flex-col gap-2">
               <label className="font-semibold">원하는 상대방 나이 범위</label>
               <div className="border p-3 rounded text-lg bg-gray-50">
-                {`${clientData.ageGapLower}세 ~ ${clientData.ageGapHigher}세`}
+                {clientData.minPreferredAge}세 ~ {clientData.maxPreferredAge}세
               </div>
             </div>
           )}
@@ -337,11 +333,20 @@ const ClientDetail = () => {
           )}
         </div>
 
-        {/* 뒤로 가기 버튼 */}
-        <div className="flex justify-center mt-6">
+        {/* 뒤로 가기 + 수정하기 버튼 */}
+        <div className="flex justify-center mt-6 gap-4">
+        {clientData && currentUser?.id && clientData.memberId === Number(currentUser.id) && (
+          <button 
+            onClick={() => navigate(`/client/edit/${clientData.id}`)} 
+            className="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600 transition"
+          >
+            수정하기
+          </button>
+        )}
+
           <button 
             onClick={() => navigate('/client')} 
-            className="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600 transition"
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             목록으로 돌아가기
           </button>

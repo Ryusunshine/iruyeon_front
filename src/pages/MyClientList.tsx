@@ -5,19 +5,22 @@ import { useAuthGuard } from '../hooks/useAuthGuard';
 import { handleUnauthorized } from '../utils/auth';
 import sampleImage from '../sample_Image.webp';
 
+interface ProfileImage {
+  id: number;
+  uri: string;
+}
+
 interface ClientResponse {
-  clientId: number;
-  clientName: string;
+  id: number;
+  name: string;
   address: string;
   age: string;
   university: string;
   currentJob: string;
-  clientImage: string;
-  memberName: string;
-  memberImage: string;
+  profileImage: ProfileImage;
 }
 
-const ClientList = () => {
+const MyClientList = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +37,7 @@ const ClientList = () => {
         setError(null);
 
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:8082/api/v0/client?page=${page - 1}`, {
+        const res = await fetch('http://localhost:8082/api/v0/client/my', {
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
@@ -50,6 +53,9 @@ const ClientList = () => {
         }
 
         const data = await res.json();
+        console.log('📦 API Response:', data);
+
+        // ✅ 응답 구조: data -> content[]
         if (data && data.data && Array.isArray(data.data.content)) {
           setClients(data.data.content);
           setTotalPages(data.data.totalPages || 1);
@@ -59,7 +65,7 @@ const ClientList = () => {
         }
 
       } catch (err) {
-        console.error('Error fetching clients:', err);
+        console.error('❌ Error fetching clients:', err);
         setError('서버 연결에 실패했습니다.');
       } finally {
         setLoading(false);
@@ -127,7 +133,7 @@ const ClientList = () => {
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-blue-50 to-pink-100 flex flex-col items-center py-10">
       <TopBar currentUser={currentUser} onLogout={handleLogout} />
       <h2 className="text-3xl font-extrabold text-gray-800 mb-8 tracking-tight mt-20">
-        회원 목록
+        내 회원 목록
       </h2>
 
       {clients.length === 0 ? (
@@ -139,30 +145,13 @@ const ClientList = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
             {clients.map((client) => (
               <div
-                key={client.clientId}
+                key={client.id}
                 className="bg-white rounded-3xl shadow-xl p-6 flex flex-col items-center transition hover:scale-105 hover:shadow-2xl cursor-pointer"
-                onClick={() => navigate(`/client/detail/${client.clientId}`)}
+                onClick={() => navigate(`/client/detail/${client.id}`)}
               >
-                {/* 멤버 정보 */}
-                <div className="flex items-center gap-3 mb-4">
-                  <img
-                    src={client.memberImage || sampleImage}
-                    alt={client.memberName}
-                    className="w-12 h-12 rounded-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = sampleImage;
-                    }}
-                  />
-                  <span className="text-base font-semibold text-gray-800">
-                    {client.memberName || '회원 이름 없음'}
-                  </span>
-                </div>
-
-                {/* 기존 클라이언트 프로필 */}
                 <img
-                  src={client.clientImage || sampleImage}
-                  alt={client.clientName}
+                  src={client.profileImage?.uri || sampleImage}
+                  alt={client.name}
                   className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg mb-4"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
@@ -171,7 +160,7 @@ const ClientList = () => {
                 />
                 <div className="text-center">
                   <div className="font-bold text-lg text-gray-800 mb-1">
-                    {client.clientName}
+                    {client.name}
                   </div>
                   <div className="text-gray-600 text-sm mb-0.5">
                     {client.currentJob || '직업 정보 없음'}
@@ -212,4 +201,4 @@ const ClientList = () => {
   );
 };
 
-export default ClientList;
+export default MyClientList;

@@ -36,7 +36,7 @@ const Home = () => {
 
   const token = localStorage.getItem('token');
   const currentUser = token ? {
-    id: localStorage.getItem('userId'),
+    id: localStorage.getItem('id'),
     isAdmin: localStorage.getItem('role') === 'ROLE_ADMIN'
   } : null;
 

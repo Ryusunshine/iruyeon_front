@@ -8,12 +8,15 @@ import ProfileForm from './pages/ProfileForm';
 import ProfileMatches from './pages/ProfileMatches';
 import MatchingRoom from './pages/MatchingRoom';
 import Admin from './pages/Admin';
-import OauthSuccess from './pages/OauthSuccess'; // ✅ 새로 만든 파일
-import Pending from './pages/Pending'; // 승인 대기 페이지 추가
-import MemberDetail from './pages/MemberDetail'; // 추가 정보 입력 페이지 추가
+import OauthSuccess from './pages/OauthSuccess'; 
+import Pending from './pages/Pending';
+import MemberDetail from './pages/MemberDetail';
 import ClientList from './pages/ClientList';
 import ClientDetail from './pages/ClientDetail';
 import PendingMember from './pages/PendingMember';
+import MyClientList from './pages/MyClientList';
+import ClientProfileForm from './pages/ClientProfileForm';
+
 
 function App() {
   return (
@@ -30,9 +33,12 @@ function App() {
         <Route path="/matching/:id" element={<MatchingRoom />} />
         <Route path="/admin/member" element={<Admin />} />
         <Route path="/oauth/success" element={<OauthSuccess />} />
-        <Route path="/pending" element={<Pending />} /> {/* 승인 대기 페이지 */}
-        <Route path="/member/detail" element={<MemberDetail />} /> {/* 추가 정보 입력 페이지 */}
+        <Route path="/pending" element={<Pending />} /> 
+        <Route path="/member/detail" element={<MemberDetail />} />
         <Route path="/admin/member/pending" element={<PendingMember />} />
+        <Route path="/myclient" element={<MyClientList />} />
+        <Route path="/client/edit/:id" element={<ClientProfileForm />} />
+
       </Routes>
     </BrowserRouter>
   );
