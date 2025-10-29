@@ -34,7 +34,7 @@ function App() {
         <Route path="/admin/member" element={<Admin />} />
         <Route path="/oauth/success" element={<OauthSuccess />} />
         <Route path="/pending" element={<Pending />} /> 
-        <Route path="/member/detail" element={<MemberDetail />} />
+        <Route path="/member/detail/:id" element={<MemberDetail />} />
         <Route path="/admin/member/pending" element={<PendingMember />} />
         <Route path="/myclient" element={<MyClientList />} />
         <Route path="/client/edit/:id" element={<ClientProfileForm />} />

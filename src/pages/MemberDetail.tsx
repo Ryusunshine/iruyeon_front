@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function formatPhoneNumber(phone: string) {
   if (!phone) return '';
@@ -36,12 +37,14 @@ const MemberDetail = () => {
   const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const memberId = Number(localStorage.getItem('id'));
+  const id = Number(localStorage.getItem('id'));
+  const navigate = useNavigate();
+
   // 페이지 로드 시 회원 정보 가져오기
   useEffect(() => {
     const fetchMember = async () => {
       try {
-        const res = await fetch(`http://localhost:8082/api/v0/member/detail/me?memberId=${memberId}`);
+        const res = await fetch(`http://localhost:8082/api/v0/member/detail/${id}`);
         if (!res.ok) throw new Error('회원 정보 가져오기 실패');
         const data = await res.json();
         if (data.data) {
@@ -81,6 +84,7 @@ const MemberDetail = () => {
     if (!form.phoneNumber.trim()) newErrors.phoneNumber = true;
     if (!form.gender) newErrors.gender = true;
     if (!form.company.trim()) newErrors.company = true;
+    if (!imagePreview && !profileImage) newErrors.profileImage = true;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -108,7 +112,7 @@ const MemberDetail = () => {
       if (profileImage) formData.append('file', profileImage);
 
       // 여기서 form.id 사용
-      const res = await fetch(`http://localhost:8082/api/v0/member/detail/${memberId}`, {
+      const res = await fetch(`http://localhost:8082/api/v0/member/detail/${id}`, {
         method: 'POST',
         body: formData
       });
@@ -120,6 +124,7 @@ const MemberDetail = () => {
         setForm(prev => ({ ...prev, ...responseData.data }));
         setImagePreview(responseData.data.image?.uri || null);
       }
+      navigate("/pending");
     } catch (err) {
       console.error(err);
       setMessage('수정이 실패했습니다.');
@@ -132,11 +137,37 @@ const MemberDetail = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-blue-50 to-pink-100 py-10">
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-2xl mt-10">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-pink-500 mb-2">마이페이지</h2>
-          <p className="text-gray-600">회원 정보를 확인 및 수정할 수 있습니다</p>
+        <h2 className="text-2xl font-bold mb-6 text-pink-500">프로필 수정하기</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
+        <div>
+        <div className="flex flex-col items-center gap-1">
+            <label
+              className={`w-36 h-36 bg-gray-100 rounded-full flex items-center justify-center cursor-pointer overflow-hidden border-2 ${
+                errors ? 'border-pink-500' : 'border-pink-200'
+              } hover:border-pink-400 transition`}
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="프로필 이미지"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-400 text-sm">사진추가</span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
+          </div>
+        </div>
+        
           <div>
             <label className="block text-gray-700 font-semibold mb-2">이메일</label>
             <input
@@ -163,7 +194,7 @@ const MemberDetail = () => {
             <label className="block text-gray-700 font-semibold mb-2">이름</label>
             <input
               type="text"
-              value={form.name}
+              value={form.name || ''}
               onChange={e => handleChange('name', e.target.value)}
               className={`w-full border rounded-lg p-3 focus:outline-none ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
             />
@@ -182,7 +213,7 @@ const MemberDetail = () => {
           <div>
             <label className="block text-gray-700 font-semibold mb-2">성별</label>
             <select
-              value={form.gender}
+              value={form.gender || ''}
               onChange={e => handleChange('gender', e.target.value)}
               className={`w-full border rounded-lg p-3 focus:outline-none ${errors.gender ? 'border-red-400' : 'border-gray-300'}`}
             >
@@ -196,24 +227,10 @@ const MemberDetail = () => {
             <label className="block text-gray-700 font-semibold mb-2">회사명</label>
             <input
               type="text"
-              value={form.company}
+              value={form.company || ''}
               onChange={e => handleChange('company', e.target.value)}
               className={`w-full border rounded-lg p-3 focus:outline-none ${errors.company ? 'border-red-400' : 'border-gray-300'}`}
             />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">프로필 이미지</label>
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-pink-200">
-                {imagePreview ? (
-                  <img src={imagePreview} alt="프로필" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">No Image</div>
-                )}
-              </div>
-              <input type="file" accept="image/*" onChange={handleImageChange} />
-            </div>
           </div>
 
           <button

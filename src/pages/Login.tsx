@@ -49,26 +49,6 @@ const Login = () => {
         return;
       }
 
-      // ✅ localStorage 저장
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('id', data.id?.toString() || '');
-      localStorage.setItem('role', data.role || '');
-      localStorage.setItem('status', data.status || '');
-
-      console.log('로그인 성공:', data);
-
-      // ✅ 조건별 리다이렉트
-      if (data.status === 'PENDING') {
-        navigate('/pending');
-      } else if (data.role === 'ROLE_ANONYMOUS' && data.status === 'INACTIVE') {
-        navigate(`/member/detail/me?memberId=${data.id}`);
-      } else if (data.role === 'ROLE_MEMBER' && data.status === 'ACTIVE') {
-        navigate('/client');
-      } else {
-        navigate('/login');
-        setError('권한이 없습니다.');
-        return;
-      }
     } catch (err) {
       console.error('로그인 에러:', err);
       setError('아이디/비밀번호가 일치하지 않습니다.');
