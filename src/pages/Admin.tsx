@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthGuard } from '../hooks/useAuthGuard';
+import sampleImage from '../sample_Image.webp';
+
 
 interface AdminMember {
   id?: string;
   name: string;
   phoneNumber: string;
   company: string;
-  image: string;
+  memberImage: string;
 }
 
 const Admin = () => {
@@ -116,7 +118,7 @@ const Admin = () => {
                   {members.map((m, idx) => (
                     <li key={idx} className="flex items-center bg-gray-100 rounded-lg px-4 py-3 shadow-sm text-lg">
                       <div className="w-16 flex justify-center">
-                        <img src={m.image || '/logo192.png'} alt="프로필" className="w-12 h-12 rounded-full object-cover border" />
+                        <img src={m.memberImage || sampleImage} alt="프로필" className="w-12 h-12 rounded-full object-cover border" />
                       </div>
                       <div className="flex-1 text-center truncate cursor-pointer hover:text-blue-600" onClick={() => navigate(`/admin/member/detail/${m.id || idx}`)}>{m.name || '-'}</div>
                       <div className="flex-1 text-center truncate">{m.phoneNumber || '-'}</div>
@@ -236,7 +238,7 @@ const PendingMemberList = () => {
           {pendingMembers.map((member, idx) => (
                             <li key={idx} className="flex items-center bg-gray-100 rounded-lg px-4 py-3 shadow-sm text-lg">
                   <div className="w-16 flex justify-center">
-                    <img src={member.image || '/logo192.png'} alt="프로필" className="w-12 h-12 rounded-full object-cover border" />
+                    <img src={member.memberImage || sampleImage} alt="프로필" className="w-12 h-12 rounded-full object-cover border" />
                   </div>
                   <div className="flex-1 text-center truncate cursor-pointer hover:text-blue-600" onClick={() => navigate(`/admin/member/detail/${member.id || idx}`)}>{member.name || '-'}</div>
                   <div className="flex-1 text-center truncate">{member.phoneNumber || '-'}</div>

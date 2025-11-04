@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function formatPhoneNumber(phone: string) {
-  if (!phone) return '';
-  const digits = phone.replace(/\D/g, '');
-  if (digits.length === 11) {
-    return digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-  } else if (digits.length === 10) {
-    return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-  }
-  return phone;
-}
-
 const Signup = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -223,7 +212,7 @@ const Signup = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">전화번호 <span className="text-red-500">*</span></label>
             <input
               type="tel"
-              value={formatPhoneNumber(form.phoneNumber)}
+              value={form.phoneNumber}
               onChange={e => handleChange('phoneNumber', e.target.value)}
               placeholder="전화번호를 입력하세요"
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition ${errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}

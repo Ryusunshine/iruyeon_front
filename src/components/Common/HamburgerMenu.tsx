@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 const HamburgerMenu = ({ currentUser, onLogout }: { currentUser: any, onLogout: () => void }) => {
   const [open, setOpen] = useState(false);
+  const id = localStorage.getItem('id');
+
   return (
     <>
       <button className="p-2" onClick={() => setOpen(!open)}>
@@ -15,6 +17,7 @@ const HamburgerMenu = ({ currentUser, onLogout }: { currentUser: any, onLogout: 
           <Link to="/client" onClick={() => setOpen(false)} className="mb-4">프로필</Link>
           <Link to="/matches" onClick={() => setOpen(false)} className="mb-4">매칭내역</Link>
           <Link to="/myclient" onClick={() => setOpen(false)} className="mb-4">내 회원목록</Link>
+          <Link to={`/member/detail/${id}`} onClick={() => setOpen(false)} className="mb-4">마이페이지</Link>
           {currentUser?.isAdmin && <Link to="/admin/member" onClick={() => setOpen(false)} className="mb-4">관리자</Link>}
           {!currentUser && (
             <>

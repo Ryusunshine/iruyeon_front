@@ -17,7 +17,7 @@ interface ClientDetailData {
   major?: string;
   property?: string;
   religion?: string;
-  currentJob?: string;
+  job?: string;
   previousJob?: string;
   jobDetail?: string;
   info?: string;
@@ -44,9 +44,7 @@ interface ClientDetailData {
     major?: string;
     property?: string;
     religion?: string;
-    currentJob?: string;
-    previousJob?: string;
-    jobDetail?: string;
+    job?: string;
     info?: string;
     homeTown?: string;
     gender?: string;
@@ -224,7 +222,7 @@ const ClientDetail = () => {
           
           <div className="flex flex-col gap-2">
             <label className="font-semibold">현재 직업</label>
-            <div className="border p-3 rounded text-lg bg-gray-50">{clientData.currentJob || '정보 없음'}</div>
+            <div className="border p-3 rounded text-lg bg-gray-50">{clientData.job || '정보 없음'}</div>
           </div>
           
           <div className="flex flex-col gap-2">
@@ -299,32 +297,24 @@ const ClientDetail = () => {
             <div className="flex flex-col gap-2">
               <label className="font-semibold">가족 정보</label>
               <div className="border p-3 rounded text-lg bg-gray-50">
-                {clientData.families.map((member, index) => {
+                {clientData.families.map((family, index) => {
                   const currentYear = new Date().getFullYear();
-                  const age = member.birthYear ? currentYear - member.birthYear : 0;
+                  const age = family.birthYear ? currentYear - family.birthYear : 0;
                   
                   return (
-                    <div key={member.id || index} className="mb-4 last:mb-0 p-3 bg-white rounded border">
-                      <div className="font-semibold text-lg mb-2">{member.relationship || '관계 정보 없음'}</div>
+                    <div key={family.id || index} className="mb-4 last:mb-0 p-3 bg-white rounded border">
+                      <div className="font-semibold text-lg mb-2">{family.relationship || '관계 정보 없음'}</div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div><span className="font-medium">이름:</span> {member.name}</div>
-                        <div><span className="font-medium">나이:</span> {age}세 ({member.birthYear}년생)</div>
-                        <div><span className="font-medium">성별:</span> {member.gender === 'MALE' ? '남성' : member.gender === 'FEMALE' ? '여성' : member.gender}</div>
-                        <div><span className="font-medium">직업:</span> {member.currentJob || '정보 없음'}</div>
-                        <div><span className="font-medium">이전 직업:</span> {member.previousJob || '정보 없음'}</div>
-                        <div><span className="font-medium">대학교:</span> {member.university || '정보 없음'}</div>
-                        <div><span className="font-medium">전공:</span> {member.major || '정보 없음'}</div>
-                        <div><span className="font-medium">주소:</span> {member.address || '정보 없음'}</div>
-                        <div><span className="font-medium">고향:</span> {member.homeTown || '정보 없음'}</div>
-                        <div><span className="font-medium">재산:</span> {member.property || '정보 없음'}</div>
-                        <div><span className="font-medium">종교:</span> {member.religion || '정보 없음'}</div>
+                        <div><span className="font-medium">이름:</span> {family.name}</div>
+                        <div><span className="font-medium">나이:</span> {age}세 ({family.birthYear}년생)</div>
+                        <div><span className="font-medium">성별:</span> {family.gender === 'MALE' ? '남성' : family.gender === 'FEMALE' ? '여성' : family.gender}</div>
+                        <div><span className="font-medium">직업:</span> {family.job || '정보 없음'}</div>
+                        <div><span className="font-medium">대학교:</span> {family.university || '정보 없음'}</div>
+                        <div><span className="font-medium">주소:</span> {family.address || '정보 없음'}</div>
+                        <div><span className="font-medium">고향:</span> {family.homeTown || '정보 없음'}</div>
+                        <div><span className="font-medium">재산:</span> {family.property || '정보 없음'}</div>
+                        <div><span className="font-medium">종교:</span> {family.religion || '정보 없음'}</div>
                       </div>
-                      {member.info && (
-                        <div className="mt-2 pt-2 border-t">
-                          <div className="font-medium">소개:</div>
-                          <div className="text-sm text-gray-600">{member.info}</div>
-                        </div>
-                      )}
                     </div>
                   );
                 })}

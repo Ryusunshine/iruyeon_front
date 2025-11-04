@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthGuard } from '../hooks/useAuthGuard';
+import sampleImage from '../sample_Image.webp';
+
 
 type PendingMemberItem = {
   id: number;
@@ -8,7 +10,7 @@ type PendingMemberItem = {
   name: string;
   phoneNumber: string;
   company: string;
-  image?: { uri: string } | null;
+  memberImage: string;
 };
 
 const PendingMember = () => {
@@ -125,15 +127,16 @@ const PendingMember = () => {
           ) : error ? (
             <div className="text-red-500 font-semibold">{error}</div>
           ) : members.length === 0 ? (
-            <div className="text-black">대기 중인 회원이 없습니다.</div>
-          ) : (
+            <div className="flex flex-col items-center justify-center text-black text-lg font-medium h-64">
+              대기 중인 회원이 없습니다.
+            </div>          ) : (
             <ul className="space-y-2">
               {members.map(member => (
                 <li key={member.id} className="flex items-center bg-gray-100 rounded-lg px-4 py-3 shadow-sm text-lg">
                   <div className="w-16 flex justify-center">
                     <img
-                      src={member.image && member.image.uri ? member.image.uri : '/default-profile.png'}
-                      alt={member.name}
+                    src={member.memberImage || sampleImage}
+                    alt={member.name}
                       className="w-12 h-12 rounded-full object-cover border"
                       onError={e => (e.currentTarget.src = '/default-profile.png')}
                     />

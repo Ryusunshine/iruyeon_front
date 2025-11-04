@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-function formatPhoneNumber(phone: string) {
-  if (!phone) return '';
-  const digits = phone.replace(/\D/g, '');
-  if (digits.length === 11) {
-    return digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-  } else if (digits.length === 10) {
-    return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-  }
-  return phone;
-}
+import TopBar from '../components/Common/TopBar';
 
 interface MemberForm {
   id: number;
@@ -54,10 +44,10 @@ const MemberDetail = () => {
             pwd: '',
             name: data.data.name,
             phoneNumber: data.data.phoneNumber,
-            gender: data.data.gender,
+            gender: data.data.gender === 'FEMALE' ? '여자' : data.data.gender === 'MALE' ? '남자' : '',
             company: data.data.company
           });
-          setImagePreview(data.data.image?.uri || null);
+          setImagePreview(data.data.memberImage|| null);
         }
       } catch (err) {
         console.error(err);
@@ -66,6 +56,22 @@ const MemberDetail = () => {
     };
     fetchMember();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:8082/api/v0/logout', {
+        method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+      });
+    } catch (e) {}
+    finally {
+      localStorage.clear();
+      navigate('/login');
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -135,6 +141,7 @@ const MemberDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-blue-50 to-pink-100 py-10">
+      <TopBar onLogout={handleLogout} />
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-2xl mt-10">
         <div className="text-center mb-8">
         <h2 className="text-2xl font-bold mb-6 text-pink-500">프로필 수정하기</h2>
@@ -204,7 +211,7 @@ const MemberDetail = () => {
             <label className="block text-gray-700 font-semibold mb-2">전화번호</label>
             <input
               type="tel"
-              value={formatPhoneNumber(form.phoneNumber)}
+              value= {form.phoneNumber}
               onChange={e => handleChange('phoneNumber', e.target.value)}
               className={`w-full border rounded-lg p-3 focus:outline-none ${errors.phoneNumber ? 'border-red-400' : 'border-gray-300'}`}
             />
@@ -213,14 +220,17 @@ const MemberDetail = () => {
           <div>
             <label className="block text-gray-700 font-semibold mb-2">성별</label>
             <select
-              value={form.gender || ''}
+              value={form.gender} 
               onChange={e => handleChange('gender', e.target.value)}
-              className={`w-full border rounded-lg p-3 focus:outline-none ${errors.gender ? 'border-red-400' : 'border-gray-300'}`}
+              className={`w-full border rounded-lg p-3 focus:outline-none ${
+                errors.gender ? 'border-red-400' : 'border-gray-300'
+              }`}
             >
-              <option value="">성별을 선택하세요</option>
-              <option value="MALE">남성</option>
-              <option value="FEMALE">여성</option>
+              <option value="">선택</option>
+              <option value="FEMALE">여자</option>
+              <option value="MALE">남자</option>
             </select>
+            {errors['gender'] && <span className="text-xs text-red-500">필수 항목입니다.</span>}
           </div>
 
           <div>

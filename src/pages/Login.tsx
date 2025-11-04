@@ -43,10 +43,43 @@ const Login = () => {
         return;
       }
 
+      // ✅ 로그인 성공 시
       const data = resData.data;
       if (!data?.token) {
         setError('로그인 토큰이 없습니다.');
         return;
+      }
+
+      // ✅ 토큰 및 사용자 정보 저장 (OauthSuccess 로직과 동일)
+      const { id, token, role, status } = data;
+
+      if (!token || !id || !role || !status) {
+        setError('로그인 정보가 올바르지 않습니다.');
+        return;
+      }
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('id', id);
+      localStorage.setItem('role', role);
+      localStorage.setItem('status', status);
+
+      console.log('[Login Success] localStorage:', {
+        token,
+        id,
+        role,
+        status,
+      });
+
+      // ✅ role/status에 따른 이동 (OauthSuccess 로직 동일)
+      if (status === 'PENDING') {
+        navigate('/pending');
+      } else if (role === 'ROLE_ANONYMOUS' && status === 'INACTIVE') {
+        navigate(`/member/detail/${id}`);
+      } else if (role === 'ROLE_MEMBER' && status === 'ACTIVE') {
+        navigate('/client');
+      } else {
+        setError('권한이 없습니다.');
+        navigate('/login');
       }
 
     } catch (err) {
@@ -87,6 +120,7 @@ const Login = () => {
 
         <button
           type="submit"
+          onClick={handleLogin}
           className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
         >
           로그인
@@ -113,4 +147,3 @@ const Login = () => {
 };
 
 export default Login;
-

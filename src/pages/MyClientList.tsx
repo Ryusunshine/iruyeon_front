@@ -5,19 +5,14 @@ import { useAuthGuard } from '../hooks/useAuthGuard';
 import { handleUnauthorized } from '../utils/auth';
 import sampleImage from '../sample_Image.webp';
 
-interface ProfileImage {
-  id: number;
-  uri: string;
-}
-
 interface ClientResponse {
   id: number;
   name: string;
   address: string;
   age: string;
   university: string;
-  currentJob: string;
-  profileImage: ProfileImage;
+  job: string;
+  profileImage: string;
 }
 
 const MyClientList = () => {
@@ -53,7 +48,6 @@ const MyClientList = () => {
         }
 
         const data = await res.json();
-        console.log('📦 API Response:', data);
 
         // ✅ 응답 구조: data -> content[]
         if (data && data.data && Array.isArray(data.data.content)) {
@@ -65,7 +59,7 @@ const MyClientList = () => {
         }
 
       } catch (err) {
-        console.error('❌ Error fetching clients:', err);
+        console.error('Error fetching clients:', err);
         setError('서버 연결에 실패했습니다.');
       } finally {
         setLoading(false);
@@ -150,7 +144,7 @@ const MyClientList = () => {
                 onClick={() => navigate(`/client/detail/${client.id}`)}
               >
                 <img
-                  src={client.profileImage?.uri || sampleImage}
+                  src={client.profileImage|| sampleImage}
                   alt={client.name}
                   className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg mb-4"
                   onError={(e) => {
@@ -163,7 +157,7 @@ const MyClientList = () => {
                     {client.name}
                   </div>
                   <div className="text-gray-600 text-sm mb-0.5">
-                    {client.currentJob || '직업 정보 없음'}
+                    {client.job || '직업 정보 없음'}
                   </div>
                   <div className="text-gray-500 text-xs mb-0.5">
                     {client.university || '학교 정보 없음'}

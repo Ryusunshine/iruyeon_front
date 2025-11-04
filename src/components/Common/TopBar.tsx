@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const TopBar = ({ currentUser, onLogout }: { currentUser?: any, onLogout: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const id = localStorage.getItem('id');
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -35,17 +36,17 @@ const TopBar = ({ currentUser, onLogout }: { currentUser?: any, onLogout: () => 
       {/* 토글 메뉴 */}
       {isMenuOpen && (
         <div className="fixed top-16 left-0 w-56 h-full bg-white shadow-lg z-40 flex flex-col p-6">
-          <Link to="/client" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">프로필</Link>
-          <Link to="/matches" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">매칭내역</Link>
-          <Link to="/myclient" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">내 회원목록</Link>
+          <Link to="/client" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-pink-600 transition">프로필</Link>
+          <Link to="/matches" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-pink-600 transition">매칭내역</Link>
+          <Link to="/myclient" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-pink-600 transition">내 회원목록</Link>
+          <Link to={`/member/detail/${id}`} onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-pink-600 transition">마이페이지</Link>
 
-          {currentUser?.isAdmin && (
-            <Link to="/admin/member" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">관리자</Link>
-          )}
+          {currentUser?.isAdmin && <Link to="/admin/member" onClick={() => setIsMenuOpen(false)} className="mb-4">관리자</Link>}
+
           {!currentUser && (
             <>
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">로그인</Link>
-              <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="mb-4 text-lg font-semibold hover:text-blue-600 transition">회원가입</Link>
+              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="mb-4">로그인</Link>
+              <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="mb-4">회원가입</Link>
             </>
           )}
         </div>

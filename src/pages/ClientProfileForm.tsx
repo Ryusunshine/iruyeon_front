@@ -6,10 +6,15 @@ import { useParams } from 'react-router-dom';
 
 
 const jobList = [
-  '대기업', '중견기업', '중소기업',
-  '간호사', '건설', '경영', '공기업/기관', '교육', '군인', '농업',
-  '문화/예술', '방송', '부동산/임대', '서비스직', '엔터테인먼트', '연구원', '개발원', '운동', '의사',
-  '판사', '검사', '변호사', '회계사', '세무사', '프리랜서', '기타'
+  { label: '대기업', value: 'LARGE_COMPANY' },
+  { label: '중견기업', value: 'MID_SIZED_COMPANY' },
+  { label: '중소기업', value: 'SMALL_COMPANY' },
+  { label: '공기업/기관', value: 'PUBLIC_INSTITUTION' },
+  { label: '교육', value: 'EDUCATION' },
+  { label: '군인', value: 'SOLDIER' },
+  { label: '전문직', value: 'PROFESSIONAL' },
+  { label: '프리랜서', value: 'FREELANCER' },
+  { label: '기타', value: 'OTHER' },
 ];
 const eduLevelList = [
   '학사', '전문대', '석사', '박사', '기타', '고졸'
@@ -55,7 +60,6 @@ const ClientProfileForm = () => {
     height: string;
     property: string;
     religion: string;
-    currentJob: string;
     previousJob: string;
     info: string;
     homeTown: string;
@@ -75,7 +79,7 @@ const ClientProfileForm = () => {
     phoneNumber: '',
     address: '',
     birthYear: '',
-    job: jobList[0],
+    job: jobList[0].value,
     jobDetail: '',
     eduLevel: eduLevelList[0],
     highSchool: '',
@@ -85,7 +89,6 @@ const ClientProfileForm = () => {
     height: '',
     property: '',
     religion: religionList[0],
-    currentJob: '',
     previousJob: '',
     info: '',
     homeTown: '',
@@ -142,7 +145,6 @@ const ClientProfileForm = () => {
           name: profile.name || '',
           address: profile.address || '',
           birthYear: profile.birthYear ? String(profile.birthYear) : '',
-          currentJob: profile.currentJob || '',
           previousJob: profile.previousJob || '',
           jobDetail: profile.jobDetail || '',
           height: profile.height ? (profile.height ? String(profile.height) : '') : '',
@@ -164,7 +166,7 @@ const ClientProfileForm = () => {
           eduLevel: profile.eduLevel || eduLevelList[0],
           maritalStatus: profile.maritalStatus === 'REMARRIED' ? '재혼' : '초혼',
           etc: profile.etc || '',
-          job: profile.currentJob || jobList[0],
+          job: profile.job || jobList[0],
           profileImages: profile.profileImages || [], // null 대신 빈 배열로 초기화
         }));
   
@@ -173,7 +175,7 @@ const ClientProfileForm = () => {
           const mappedFamilies = profile.families.map((fam: any) => ({
             name: fam.name || '',
             relation: relationOptions.find(r => r.value === fam.relationship)?.label || '',
-            job: fam.currentJob || '',
+            job: fam.job || '',
             education: fam.education || '',
             age: fam.birthYear ? String(fam.birthYear) : '',
             religion: fam.religion || '',
@@ -333,7 +335,7 @@ const ClientProfileForm = () => {
       major: form.major ? `${form.major}(학과)` : null,
       property: nullIfEmpty(form.property),
       religion: nullIfEmpty(form.religion),
-      currentJob: nullIfEmpty(form.currentJob),
+      job: nullIfEmpty(form.job),
       previousJob: nullIfEmpty(form.previousJob),
       jobDetail: nullIfEmpty(form.jobDetail),
       info: nullIfEmpty(form.info),
@@ -495,9 +497,19 @@ const ClientProfileForm = () => {
           </div>
           <div className="flex flex-col gap-2">
             <label className="font-semibold">직업 <span className="text-pink-500">*</span></label>
-            <select value={form.job} onChange={e => handleChange('job', e.target.value)} className={`border p-3 rounded text-lg ${errors['job'] ? 'border-red-500' : ''}`}>{jobList.map(j => <option key={j} value={j}>{j}</option>)}</select>
-            {errors['job'] && <span className="text-xs text-red-500">필수 항목입니다.</span>}
-            <input type="text" placeholder="직업 상세사항" value={form.currentJob} onChange={e => handleChange('currentJob', e.target.value)} className="border p-3 rounded text-lg mt-1" />
+            <select
+              value={form.job}
+              onChange={e => handleChange('job', e.target.value)}
+              className={`border p-3 rounded text-lg ${errors['job'] ? 'border-red-500' : ''}`}
+            >
+              <option value="">직업 선택</option>
+              {jobList.map(j => (
+                <option key={j.value} value={j.value}>
+                  {j.label}
+                </option>
+              ))}
+            </select>            {errors['job'] && <span className="text-xs text-red-500">필수 항목입니다.</span>}
+            <input type="text" placeholder="직업 상세사항" value={form.jobDetail} onChange={e => handleChange('jobDetail', e.target.value)} className="border p-3 rounded text-lg mt-1" />
           </div>
           <div className="flex flex-col gap-2">
             <label className="font-semibold">이전 직업</label>
